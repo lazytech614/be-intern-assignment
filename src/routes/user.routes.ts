@@ -4,7 +4,6 @@ import { createUserSchema, updateUserSchema } from '../validations/user.validati
 import { UserController } from '../controllers/user.controller';
 
 export const userRouter = Router();
-export const postRouter = Router();
 const userController = new UserController();
 
 // Get all users

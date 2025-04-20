@@ -6,7 +6,7 @@ import {
     JoinColumn,
     CreateDateColumn,
   } from "typeorm";
-  import { User } from "./User";
+  import { Users } from "./User";
   
   export enum ActivityType {
     POST_CREATED = "POST_CREATED",
@@ -25,9 +25,9 @@ import {
     userId: number;
   
     // Restored relation back to User
-    @ManyToOne(() => User, user => user.activities)
+    @ManyToOne(() => Users, user => user.activities)
     @JoinColumn({ name: "userId" })
-    user: User;
+    user: Users;
   
     // Store enum as a plain string (SQLite has no ENUM)
     @Column()

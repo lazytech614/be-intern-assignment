@@ -5,20 +5,20 @@ import {
     CreateDateColumn,
     JoinColumn,
   } from "typeorm";
-  import { User } from "./User";
+  import { Users } from "./User";
   
   @Entity()
   export class Follow {
     // 1) Mark the join column as a primary column
     @PrimaryColumn({ name: "followerId", type: "uuid" })
-    @ManyToOne(() => User, (user) => user.followings)
+    @ManyToOne(() => Users, (user) => user.followings)
     @JoinColumn({ name: "followerId" })
-    follower: User;
+    follower: Users;
   
     @PrimaryColumn({ name: "followingId", type: "uuid" })
-    @ManyToOne(() => User, (user) => user.followers)
+    @ManyToOne(() => Users, (user) => user.followers)
     @JoinColumn({ name: "followingId" })
-    following: User;
+    following: Users;
   
     @CreateDateColumn()
     createdAt: Date;

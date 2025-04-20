@@ -1,6 +1,7 @@
 import express from 'express';
 import dotenv from 'dotenv';
-import { userRouter, postRouter } from './routes/user.routes';
+import { userRouter } from './routes/user.routes';
+import { postRouter } from './routes/post.routes';
 import { AppDataSource } from './data-source';
 
 dotenv.config();

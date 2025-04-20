@@ -5,7 +5,7 @@ import {
     CreateDateColumn,
     JoinColumn,
   } from "typeorm";
-  import { User } from "./User";
+  import { Users } from "./User";
   import { Post } from "./Post";
   
   @Entity()
@@ -16,9 +16,9 @@ import {
     @PrimaryColumn()
     postId: number;
   
-    @ManyToOne(() => User, user => user.likes)
+    @ManyToOne(() => Users, user => user.likes)
     @JoinColumn({ name: "userId" })
-    user: User;
+    user: Users;
   
     @ManyToOne(() => Post, post => post.likes)
     @JoinColumn({ name: "postId" })

@@ -10,7 +10,7 @@ import {
     OneToMany,
     Index
   } from "typeorm";
-  import { User } from "./User";
+  import { Users } from "./User";
   import { Hashtag } from "./Hashtag";
   import { Like } from "./Like";
   
@@ -20,8 +20,8 @@ import {
     @PrimaryGeneratedColumn()
     id: number;
   
-    @ManyToOne(() => User, user => user.posts)
-    author: User;
+    @ManyToOne(() => Users, user => user.posts)
+    author: Users;
   
     @Column("text")
     content: string;

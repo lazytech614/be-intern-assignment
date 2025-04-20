@@ -16,7 +16,7 @@ import { Activity } from "./Activity";
 
 @Entity()
 @Index(["email"], { unique: true })  // only email is unique/indexed now :contentReference[oaicite:0]{index=0}
-export class User {
+export class Users {
   @PrimaryGeneratedColumn()
   id: number;                         // auto‑increment PK :contentReference[oaicite:1]{index=1}
 
@@ -38,12 +38,12 @@ export class User {
   @OneToMany(() => Post, post => post.author)
   posts: Post[];
 
-  @ManyToMany(() => User, user => user.followers)
+  @ManyToMany(() => Users, user => user.followers)
   @JoinTable({ name: "follow" })
-  followings: User[];
+  followings: Users[];
 
-  @ManyToMany(() => User, user => user.followings)
-  followers: User[];
+  @ManyToMany(() => Users, user => user.followings)
+  followers: Users[];
 
   @OneToMany(() => Like, like => like.user)
   likes: Like[];

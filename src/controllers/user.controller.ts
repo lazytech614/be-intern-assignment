@@ -1,9 +1,9 @@
 import { Request, Response } from 'express';
-import { User } from '../entities/User';
+import { Users } from '../entities/User';
 import { AppDataSource } from '../data-source';
 
 export class UserController {
-  private userRepository = AppDataSource.getRepository(User);
+  private userRepository = AppDataSource.getRepository(Users);
 
   async getAllUsers(req: Request, res: Response) {
     try {
