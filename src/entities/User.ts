@@ -4,20 +4,27 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
-} from 'typeorm';
+  OneToMany,
+  ManyToMany,
+  JoinTable,
+  Index
+} from "typeorm";
+import { Post } from "./Post";
+import { Follow } from "./Follow";
+import { Like } from "./Like";
+import { Activity } from "./Activity";
 
-@Entity('users')
+@Entity()
+@Index(["username"], { unique: true })
+@Index(["email"], { unique: true })
 export class User {
-  @PrimaryGeneratedColumn('increment')
+  @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'varchar', length: 255 })
-  firstName: string;
+  @Column()
+  username: string;
 
-  @Column({ type: 'varchar', length: 255 })
-  lastName: string;
-
-  @Column({ type: 'varchar', length: 255, unique: true })
+  @Column()
   email: string;
 
   @CreateDateColumn()
@@ -25,4 +32,21 @@ export class User {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @OneToMany(() => Post, post => post.author)
+  posts: Post[];
+
+  // self‑referencing many‑to‑many for follows
+  @ManyToMany(() => User, user => user.followers)
+  @JoinTable({ name: "follow" })
+  followings: User[];
+
+  @ManyToMany(() => User, user => user.followings)
+  followers: User[];
+
+  @OneToMany(() => Like, like => like.user)
+  likes: Like[];
+
+  @OneToMany(() => Activity, activity => activity.user)
+  activities: Activity[];
 }
