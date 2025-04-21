@@ -1,4 +1,3 @@
-// src/controllers/post.controller.ts
 import { Request, Response } from 'express';
 import { Post } from '../entities/Post';
 import { Hashtag } from '../entities/Hashtag';
@@ -13,7 +12,6 @@ export class PostController {
   private userRepository = AppDataSource.getRepository(Users);
   private activityRepository = AppDataSource.getRepository(Activity)
 
-  // Fetch all posts
   async getAllPosts(req: Request, res: Response) {
     try {
       const posts = await this.postRepository.find({
@@ -26,7 +24,6 @@ export class PostController {
     }
   }
 
-  // Fetch a single post by ID
   async getPostById(req: Request, res: Response) {
     try {
       const post = await this.postRepository.findOne({
@@ -42,7 +39,6 @@ export class PostController {
     }
   }
 
-  // Create a new post
   async createPost(req: Request, res: Response) {
     try {
       const { content, hashtags } = req.body;
@@ -103,7 +99,6 @@ export class PostController {
     }
   }
 
-  // Update an existing post
   async updatePost(req: Request, res: Response) {
     try {
       const authorId = req.userId;
@@ -126,7 +121,6 @@ export class PostController {
     }
   }
 
-  // Delete a post
   async deletePost(req: Request, res: Response) {
     try {
       const authorId = req.userId;
@@ -145,7 +139,6 @@ export class PostController {
     }
   }
   
-  // Get posts by hashtags
   async getPostsByHashtag(req: Request, res: Response) {
     try {
       const { tag } = req.params;

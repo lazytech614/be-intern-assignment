@@ -73,7 +73,6 @@ export class UserController {
     }
   }
 
-  // Follow a user
   async followUser(req: Request, res: Response) {
     // const { followerId, followingId } = req.body;
     // console.log(req.userId);
@@ -115,7 +114,6 @@ export class UserController {
     return res.status(200).json({ message: "Successfully followed the user." });
   }
 
-  // Unfollow a user
   async unfollowUser(req: Request, res: Response) {
     // const { followerId, followingId } = req.body;
 
@@ -144,7 +142,6 @@ export class UserController {
     return res.status(200).json({ message: "Successfully unfollowed the user." });
   }
 
-  // Like a post
   async likePost(req: Request, res: Response) {
     const postId = parseInt(req.params.id);
     const userId = req.userId;
@@ -179,7 +176,6 @@ export class UserController {
     return res.status(200).json({ message: 'Post liked successfully' });
   }
   
-  // Unlike a post
   async unlikePost(req: Request, res: Response) {
     const postId = parseInt(req.params.id);
     const userId = req.userId;
@@ -208,7 +204,6 @@ export class UserController {
     return res.status(200).json({ message: 'Post unliked successfully' });
   }
 
-  // get feed
   async getPersonalizedFeed(req: Request, res: Response) {
     const userId = req.userId;
 
@@ -276,7 +271,6 @@ export class UserController {
     });
   }
 
-  // get all my followers
   async getFollowers(req: Request, res: Response) {
     try {
       const userId = req.userId;
@@ -322,7 +316,6 @@ export class UserController {
     }
   }
 
-  // Get all activities
   async getUserActivities(req: Request, res: Response) {
     try {
       const { type, startDate, endDate, limit = 10, offset = 0 } = req.query;
@@ -366,5 +359,4 @@ export class UserController {
       res.status(500).json({ message: 'Internal server error' });
     }
   }
-
 }
