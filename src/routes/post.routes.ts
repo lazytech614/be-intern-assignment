@@ -14,6 +14,12 @@ postRouter.get(
   postController.getAllPosts.bind(postController)  
 );
 
+// Get posts by hashtags
+postRouter.get(
+  '/hashtag/:tag',
+  postController.getPostsByHashtag.bind(postController)
+);
+
 // Get a single post by ID  
 postRouter.get(
   '/:id',  
@@ -42,4 +48,5 @@ postRouter.delete(
   authenticateUser,
   postController.deletePost.bind(postController)  
 );
+
 

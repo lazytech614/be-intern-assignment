@@ -66,18 +66,20 @@ export class PostController {
         post.hashtags = [];
 
         for (const tagText of hashtags) {
+          const normalizedTag = tagText.replace(/^#/, ''); // Remove # if present
           // Check if the hashtag already exists
-          let hashtag = await this.hashtagRepository.findOne({ where: { tag: tagText } });
-
+          let hashtag = await this.hashtagRepository.findOne({ where: { tag: normalizedTag } });
+        
           // If not, create a new one
           if (!hashtag) {
             hashtag = new Hashtag();
-            hashtag.tag = tagText;
+            hashtag.tag = normalizedTag;
             await this.hashtagRepository.save(hashtag);
           }
-
+        
           post.hashtags.push(hashtag);
         }
+        
       }
 
       // Save the post
@@ -127,6 +129,61 @@ export class PostController {
       res.status(204).send();
     } catch (error) {
       res.status(500).json({ message: 'Error deleting post', error });
+    }
+  }
+  
+  // Get posts by hashtags
+  async getPostsByHashtag(req: Request, res: Response) {
+    try {
+      const { tag } = req.params;
+      const limit = parseInt(req.query.limit as string) || 10;
+      const offset = parseInt(req.query.offset as string) || 0;
+
+      // Fetch the hashtag entity
+      const hashtag = await this.hashtagRepository.findOne({
+        where: { tag },
+        relations: ['posts'],
+      });
+
+      if (!hashtag) {
+        return res.status(404).json({ message: 'Hashtag not found' });
+      }
+
+      // Fetch posts associated with the hashtag
+      const posts = await this.postRepository
+        .createQueryBuilder('post')
+        .leftJoinAndSelect('post.author', 'author')
+        .leftJoinAndSelect('post.likes', 'like')
+        .leftJoinAndSelect('post.hashtags', 'hashtag')
+        .where('hashtag.tag = :tag', { tag })
+        .orderBy('post.createdAt', 'DESC')
+        .skip(offset)
+        .take(limit)
+        .getMany();
+
+      // Format the response
+      const formattedPosts = posts.map((post) => ({
+        id: post.id,
+        content: post.content,
+        createdAt: post.createdAt,
+        author: {
+          id: post.author.id,
+          firstName: post.author.firstName,
+          lastName: post.author.lastName,
+        },
+        likeCount: post.likes.length,
+        hashtags: post.hashtags.map((tag) => tag.tag),
+      }));
+
+      return res.status(200).json({
+        posts: formattedPosts,
+        pagination: {
+          limit,
+          offset,
+        },
+      });
+    } catch (error) {
+      res.status(500).json({ message: 'Error fetching posts by hashtag', error });
     }
   }
 }
