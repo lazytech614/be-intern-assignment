@@ -47,8 +47,9 @@ export class UserController {
 
   async updateUser(req: Request, res: Response) {
     try {
+      const userId = req.userId;
       const user = await this.userRepository.findOneBy({
-        id: parseInt(req.params.id),
+        id: userId,
       });
       if (!user) {
         return res.status(404).json({ message: 'User not found' });
