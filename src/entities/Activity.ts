@@ -1,12 +1,14 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  ManyToOne,
-  JoinColumn,
-  CreateDateColumn,
+// src/entities/Activity.ts
+import { 
+  Entity, 
+  PrimaryGeneratedColumn, 
+  Column, 
+  ManyToOne, 
+  JoinColumn, 
+  CreateDateColumn 
 } from "typeorm";
 import { Users } from "./User";
+import { Post } from "./Post";
 
 export enum ActivityType {
   POST_CREATED = "POST_CREATED",
@@ -27,11 +29,15 @@ export class Activity {
   @JoinColumn({ name: "userId" })
   user: Users;
 
-  @Column({ type: "varchar" }) // make sure enum stored as string
+  @Column({ type: "varchar" })
   type: ActivityType;
 
   @Column()
   referenceId: number;
+
+  @ManyToOne(() => Post, post => post.likes, { nullable: true })
+  @JoinColumn({ name: "referenceId", referencedColumnName: "id" })
+  post: Post; // Reference to Post when activity is of type POST_CREATED
 
   @CreateDateColumn()
   createdAt: Date;

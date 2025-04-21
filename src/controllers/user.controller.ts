@@ -3,11 +3,14 @@ import { Users } from '../entities/User';
 import { Post } from '../entities/Post';
 import { Like } from '../entities/Like';
 import { AppDataSource } from '../data-source';
+import { Activity } from '../entities/Activity';
+import { ActivityType } from '../entities/Activity';
 
 export class UserController {
   private userRepository = AppDataSource.getRepository(Users);
   private postRepository = AppDataSource.getRepository(Post);
   private likeRepository = AppDataSource.getRepository(Like);
+  private activityRepository = AppDataSource.getRepository(Activity)
 
   async getAllUsers(req: Request, res: Response) {
     try {
@@ -102,6 +105,13 @@ export class UserController {
     follower.followings.push(following);
     await this.userRepository.save(follower);
 
+    // Log follow activity
+    const activity = new Activity();
+    activity.userId = follower.id;
+    activity.type = ActivityType.FOLLOWED;
+    activity.referenceId = following.id;
+    await this.activityRepository.save(activity);
+
     return res.status(200).json({ message: "Successfully followed the user." });
   }
 
@@ -123,6 +133,13 @@ export class UserController {
 
     follower.followings = follower.followings.filter(user => user.id !== followingId);
     await this.userRepository.save(follower);
+
+     // Log unfollow activity
+    const activity = new Activity();
+    activity.userId = follower.id;
+    activity.type = ActivityType.UNFOLLOWED;
+    activity.referenceId = followingId;
+    await this.activityRepository.save(activity);
 
     return res.status(200).json({ message: "Successfully unfollowed the user." });
   }
@@ -151,6 +168,13 @@ export class UserController {
   
     const like = this.likeRepository.create({ postId, userId });
     await this.likeRepository.save(like);
+
+    // Log like activity
+    const activity = new Activity();
+    activity.userId = userId;
+    activity.type = ActivityType.LIKED;
+    activity.referenceId = postId;
+    await this.activityRepository.save(activity);
   
     return res.status(200).json({ message: 'Post liked successfully' });
   }
@@ -173,6 +197,13 @@ export class UserController {
     }
   
     await this.likeRepository.remove(existingLike);
+
+    // Log unlike activity
+    const activity = new Activity();
+    activity.userId = userId;
+    activity.type = ActivityType.LIKED;
+    activity.referenceId = postId;
+    await this.activityRepository.save(activity);
   
     return res.status(200).json({ message: 'Post unliked successfully' });
   }
@@ -290,4 +321,50 @@ export class UserController {
       return res.status(500).json({ message: 'Internal server error' });
     }
   }
+
+  // Get all activities
+  async getUserActivities(req: Request, res: Response) {
+    try {
+      const { type, startDate, endDate, limit = 10, offset = 0 } = req.query;
+
+      // Build query
+      const query = this.activityRepository
+        .createQueryBuilder('activity')
+        .leftJoinAndSelect('activity.user', 'user')
+        .leftJoinAndSelect('activity.post', 'post')  // Join post to get post information when activity is related to a post
+        .orderBy('activity.createdAt', 'DESC');
+
+      // Apply filters
+      if (type && Object.values(ActivityType).includes(type as ActivityType)) {
+        query.andWhere('activity.type = :type', { type });
+      }
+
+      if (startDate) {
+        query.andWhere('activity.createdAt >= :startDate', { startDate });
+      }
+
+      if (endDate) {
+        query.andWhere('activity.createdAt <= :endDate', { endDate });
+      }
+
+      // Pagination
+      const [activities, total] = await query
+        .skip(Number(offset))
+        .take(Number(limit))
+        .getManyAndCount();
+
+      res.json({
+        total,
+        activities,
+        pagination: {
+          limit: Number(limit),
+          offset: Number(offset),
+        },
+      });
+    } catch (error) {
+      console.error('Error fetching all activities:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  }
+
 }

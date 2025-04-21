@@ -16,6 +16,9 @@ userRouter.get('/feed', authenticateUser, userController.getPersonalizedFeed.bin
 // Get all my followers
 userRouter.get('/followers', authenticateUser, userController.getFollowers.bind(userController));
 
+// Get activity
+userRouter.get('/activity', userController.getUserActivities.bind(userController));
+
 // Get user by id
 userRouter.get('/:id', userController.getUserById.bind(userController));
 
@@ -39,5 +42,6 @@ userRouter.post('/:id/like', authenticateUser, userController.likePost.bind(user
 
 // Unlike a post
 userRouter.post('/:id/unlike', authenticateUser, userController.unlikePost.bind(userController));
+
 
 

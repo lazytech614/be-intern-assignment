@@ -4,11 +4,14 @@ import { Post } from '../entities/Post';
 import { Hashtag } from '../entities/Hashtag';
 import { AppDataSource } from '../data-source';
 import { Users } from '../entities/User';
+import { Activity } from '../entities/Activity';
+import { ActivityType } from '../entities/Activity';
 
 export class PostController {
   private postRepository = AppDataSource.getRepository(Post);
   private hashtagRepository = AppDataSource.getRepository(Hashtag);
   private userRepository = AppDataSource.getRepository(Users);
+  private activityRepository = AppDataSource.getRepository(Activity)
 
   // Fetch all posts
   async getAllPosts(req: Request, res: Response) {
@@ -84,6 +87,16 @@ export class PostController {
 
       // Save the post
       const result = await this.postRepository.save(post);
+
+      // Log activity for post creation
+      const activity = new Activity();
+      activity.userId = author.id;
+      activity.type = ActivityType.POST_CREATED;
+      activity.referenceId = result.id; // Reference the newly created post
+
+      // Save the activity
+      await this.activityRepository.save(activity);
+
       res.status(201).json(result);
     } catch (error) {
       res.status(500).json({ message: 'Error creating post', error });
