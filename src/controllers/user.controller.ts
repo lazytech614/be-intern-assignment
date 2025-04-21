@@ -65,4 +65,61 @@ export class UserController {
       res.status(500).json({ message: 'Error deleting user', error });
     }
   }
+
+  // Follow a user
+  async followUser(req: Request, res: Response) {
+    // const { followerId, followingId } = req.body;
+    // console.log(req.userId);
+    const followerId = req.userId; // Authentication middleware sets userId
+    const followingId = parseInt(req.params.id, 10);
+    console.log("followerId", followerId);
+    console.log("followingId", followingId);
+
+    if (followerId === followingId) {
+      return res.status(400).json({ message: "Users cannot follow themselves." });
+    }
+
+    const follower = await this.userRepository.findOne({
+      where: { id: followerId },
+      relations: ['followings'],
+    });
+
+    const following = await this.userRepository.findOneBy({ id: followingId });
+
+    if (!follower || !following) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    // Check if already following
+    if (follower.followings.some(user => user.id === following.id)) {
+      return res.status(400).json({ message: "Already following this user." });
+    }
+
+    follower.followings.push(following);
+    await this.userRepository.save(follower);
+
+    return res.status(200).json({ message: "Successfully followed the user." });
+  }
+
+  // Unfollow a user
+  async unfollowUser(req: Request, res: Response) {
+    // const { followerId, followingId } = req.body;
+
+    const followerId = req.userId; // Authentication middleware sets userId
+    const followingId = parseInt(req.params.id, 10);
+
+    const follower = await this.userRepository.findOne({
+      where: { id: followerId },
+      relations: ['followings'],
+    });
+
+    if (!follower) {
+      return res.status(404).json({ message: "Follower not found." });
+    }
+
+    follower.followings = follower.followings.filter(user => user.id !== followingId);
+    await this.userRepository.save(follower);
+
+    return res.status(200).json({ message: "Successfully unfollowed the user." });
+  }
 }

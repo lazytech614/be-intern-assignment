@@ -38,3 +38,4 @@ postRouter.delete(
   '/:id',  
   postController.deletePost.bind(postController)  
 );
+

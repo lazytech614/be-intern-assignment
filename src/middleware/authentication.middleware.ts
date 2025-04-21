@@ -1,54 +1,51 @@
-import { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
-import { getRepository } from "typeorm";
-import { User } from "../entities/User";
+import { Request, Response, NextFunction } from 'express';
+// import jwt from 'jsonwebtoken';
 
-interface JwtPayload {
-  userId: number;
+// interface AuthenticatedRequest extends Request {
+//   userId?: number;
+// }
+
+// export const authenticateUser = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+//   const authHeader = req.headers.authorization;
+
+//   if (!authHeader || !authHeader.startsWith('Bearer ')) {
+//     return res.status(401).json({ message: 'Unauthorized: No token provided' });
+//   }
+
+//   const token = authHeader.split(' ')[1];
+
+//   try {
+//     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { id: number };
+//     req.userId = decoded.id;
+//     next();
+//   } catch (err) {
+//     return res.status(401).json({ message: 'Unauthorized: Invalid token' });
+//   }
+// };
+
+
+interface AuthenticatedRequest extends Request {
+  userId?: number;
 }
 
-// Read your secret from env (never hard‑code in production)  
-const JWT_SECRET = process.env.JWT_SECRET || "change_this_in_prod";  
-
-export async function validateAuth(
-  req: Request,
+export const authenticateUser = (
+  req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
-) {
-  // 1. Extract Bearer token  
-  const authHeader = req.header("Authorization");  
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {  
-    return res.status(401).json({ error: "No token, authorization denied" });  
-  }  
-  const token = authHeader.replace("Bearer ", "");  
+) => {
+  const userIdHeader = req.headers['x-user-id'];
 
-  try {
-    // 2. Verify and decode token  
-    const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;  
-    req.userId = decoded.userId;  
-  } catch (err) {
-    return res.status(401).json({ error: "Token is not valid" });  
+  if (!userIdHeader) {
+    return res.status(401).json({ message: 'Unauthorized: No user ID provided' });
   }
 
-  try {
-    // 3. Load user and their followings from DB  
-    const repo = getRepository(User);  
-    const user = await repo.findOne({
-      where: { id: req.userId! },
-      relations: ["followings"]
-    });  
+  const userId = parseInt(userIdHeader as string, 10);
 
-    if (!user) {  
-      return res.status(401).json({ error: "User not found" });  
-    }  
-
-    // 4. Attach user and followingIds array  
-    req.user = user;  
-    req.followingIds = user.followings.map(u => u.id);  
-    next();  
-
-  } catch (dbErr) {
-    console.error("Auth middleware DB error:", dbErr);  
-    return res.status(500).json({ error: "Server error" });  
+  if (isNaN(userId)) {
+    return res.status(400).json({ message: 'Invalid user ID format' });
   }
-}
+
+  req.userId = userId;
+  next();
+};
+
