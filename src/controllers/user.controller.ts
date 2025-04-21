@@ -176,5 +176,74 @@ export class UserController {
   
     return res.status(200).json({ message: 'Post unliked successfully' });
   }
+
+  // get feed
+  async getPersonalizedFeed(req: Request, res: Response) {
+    const userId = req.userId;
+
+    const limit = parseInt(req.query.limit as string) || 10;
+    const offset = parseInt(req.query.offset as string) || 0;
+  
+    if (!userId) {
+      return res.status(400).json({ message: 'User ID is required' });
+    }
+  
+    // Retrieve the list of user IDs that the current user follows
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['followings'],
+    });
+  
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+  
+    const followingIds = user.followings.map(following => following.id);
+  
+    if (followingIds.length === 0) {
+      return res.status(200).json({
+        posts: [],
+        pagination: {
+          limit,
+          offset,
+        },
+      });
+    }
+  
+    // Fetch posts from followed users
+    const posts = await this.postRepository
+      .createQueryBuilder('post')
+      .leftJoinAndSelect('post.author', 'author')
+      .leftJoinAndSelect('post.likes', 'like')
+      .leftJoinAndSelect('post.hashtags', 'hashtag')
+      .where('post.authorId IN (:...followingIds)', { followingIds })
+      .orderBy('post.createdAt', 'DESC')
+      .skip(offset)
+      .take(limit)
+      .getMany();
+  
+    // Format the response
+    const formattedPosts = posts.map(post => ({
+      id: post.id,
+      content: post.content,
+      createdAt: post.createdAt,
+      author: {
+        id: post.author.id,
+        firstName: post.author.firstName,
+        lastName: post.author.lastName,
+      },
+      likeCount: post.likes.length,
+      hashtags: post.hashtags.map(tag => tag.tag),
+    }));
+  
+    return res.status(200).json({
+      posts: formattedPosts,
+      pagination: {
+        limit,
+        offset,
+      },
+    });
+  }
+  
   
 }

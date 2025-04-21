@@ -3,10 +3,12 @@ import { Request, Response } from 'express';
 import { Post } from '../entities/Post';
 import { Hashtag } from '../entities/Hashtag';
 import { AppDataSource } from '../data-source';
+import { Users } from '../entities/User';
 
 export class PostController {
   private postRepository = AppDataSource.getRepository(Post);
   private hashtagRepository = AppDataSource.getRepository(Hashtag);
+  private userRepository = AppDataSource.getRepository(Users);
 
   // Fetch all posts
   async getAllPosts(req: Request, res: Response) {
@@ -41,10 +43,23 @@ export class PostController {
   async createPost(req: Request, res: Response) {
     try {
       const { content, hashtags } = req.body;
+      const authorId = req.userId;
+
+      if (!authorId) {
+        return res.status(400).json({ message: 'Author ID is missing from request' });
+      }
+
+      // Fetch the author from the database
+      const author = await this.userRepository.findOne({ where: { id: authorId } });
+
+      if (!author) {
+        return res.status(404).json({ message: 'Author not found' });
+      }
 
       // Create a new Post instance
       const post = new Post();
       post.content = content;
+      post.author = author;
 
       // Process hashtags if provided
       if (Array.isArray(hashtags)) {

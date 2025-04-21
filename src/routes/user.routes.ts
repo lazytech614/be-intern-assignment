@@ -10,6 +10,9 @@ const userController = new UserController();
 // Get all users
 userRouter.get('/', userController.getAllUsers.bind(userController));
 
+// get feed
+userRouter.get('/feed', authenticateUser, userController.getPersonalizedFeed.bind(userController));
+
 // Get user by id
 userRouter.get('/:id', userController.getUserById.bind(userController));
 
@@ -33,3 +36,4 @@ userRouter.post('/:id/like', authenticateUser, userController.likePost.bind(user
 
 // Unlike a post
 userRouter.post('/:id/unlike', authenticateUser, userController.unlikePost.bind(userController));
+
