@@ -109,6 +109,7 @@ export class PostController {
 
       const post = await this.postRepository.findOneBy({
         id: parseInt(req.params.id, 10),
+        author: { id: authorId }
       });
       if (!post) {
         return res.status(404).json({ message: 'Post not found' });
@@ -129,11 +130,19 @@ export class PostController {
         return res.status(400).json({ message: 'Author ID is missing from request' });
       }
 
-      const result = await this.postRepository.delete(parseInt(req.params.id, 10));
-      if (result.affected === 0) {
-        return res.status(404).json({ message: 'Post not found' });
+      // const result = await this.postRepository.delete(parseInt(req.params.id, 10));
+      const post = await this.postRepository.findOneBy({
+        id:parseInt(req.params.id),
+        author: { id: authorId },
+      });
+      
+      if (!post) {
+        return res.status(404).json({ message: 'Post not found or unauthorized' });
       }
-      res.status(204).send();
+      
+      await this.postRepository.remove(post);
+
+      res.status(204).json({ message: 'Post deleted successfully' });
     } catch (error) {
       res.status(500).json({ message: 'Error deleting post', error });
     }

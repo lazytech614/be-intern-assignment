@@ -1,4 +1,3 @@
-// src/entities/Activity.ts
 import { 
   Entity, 
   PrimaryGeneratedColumn, 
@@ -25,7 +24,7 @@ export class Activity {
   @Column()
   userId: number;
 
-  @ManyToOne(() => Users, user => user.activities)
+  @ManyToOne(() => Users, user => user.activities, { onDelete: 'CASCADE' })
   @JoinColumn({ name: "userId" })
   user: Users;
 

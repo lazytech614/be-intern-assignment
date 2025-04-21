@@ -20,7 +20,7 @@ import {
     @PrimaryGeneratedColumn()
     id: number;
   
-    @ManyToOne(() => Users, user => user.posts)
+    @ManyToOne(() => Users, user => user.posts, { onDelete: 'CASCADE' })
     author: Users;
   
     @Column("text")

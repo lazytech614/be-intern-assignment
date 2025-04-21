@@ -11,6 +11,7 @@ app.use(express.json());
 
 AppDataSource.initialize()
   .then(() => {
+    // await AppDataSource.query('PRAGMA foreign_keys = ON;');
     console.log('Data Source has been initialized!');
   })
   .catch((err) => {

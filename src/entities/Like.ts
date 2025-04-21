@@ -16,7 +16,7 @@ export class Like {
   @PrimaryColumn()
   postId: number;
 
-  @ManyToOne(() => Users, user => user.likes)
+  @ManyToOne(() => Users, user => user.likes, { onDelete: 'CASCADE' })
   @JoinColumn({ name: "userId" })
   user: Users;
 

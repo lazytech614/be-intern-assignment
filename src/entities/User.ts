@@ -35,19 +35,19 @@ export class Users {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @OneToMany(() => Post, post => post.author)
+  @OneToMany(() => Post, post => post.author, { onDelete: 'CASCADE' })
   posts: Post[];
 
-  @ManyToMany(() => Users, user => user.followers)
+  @ManyToMany(() => Users, user => user.followers, { onDelete: 'CASCADE' })
   @JoinTable({ name: "follow" }) // Owning side
   followings: Users[];
 
-  @ManyToMany(() => Users, user => user.followings)
+  @ManyToMany(() => Users, user => user.followings, { onDelete: 'CASCADE' })
   followers: Users[];
 
-  @OneToMany(() => Like, like => like.user)
+  @OneToMany(() => Like, like => like.user, { onDelete: 'CASCADE' })
   likes: Like[];
 
-  @OneToMany(() => Activity, activity => activity.user)
+  @OneToMany(() => Activity, activity => activity.user, { onDelete: 'CASCADE' })
   activities: Activity[];
 }
