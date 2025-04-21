@@ -1,0 +1,114 @@
+import { MigrationInterface, QueryRunner } from "typeorm";
+
+export class CreateTables1745221828799 implements MigrationInterface {
+    name = 'CreateTables1745221828799'
+
+    public async up(queryRunner: QueryRunner): Promise<void> {
+        await queryRunner.query(`CREATE TABLE "temporary_users" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "firstName" varchar(255) NOT NULL, "lastName" varchar(255) NOT NULL, "email" varchar(255) NOT NULL, "createdAt" datetime NOT NULL DEFAULT (CURRENT_TIMESTAMP), "updatedAt" datetime NOT NULL DEFAULT (CURRENT_TIMESTAMP), CONSTRAINT "UQ_97672ac88f789774dd47f7c8be3" UNIQUE ("email"))`);
+        await queryRunner.query(`INSERT INTO "temporary_users"("id", "firstName", "lastName", "email", "createdAt", "updatedAt") SELECT "id", "firstName", "lastName", "email", "createdAt", "updatedAt" FROM "users"`);
+        await queryRunner.query(`DROP TABLE "users"`);
+        await queryRunner.query(`ALTER TABLE "temporary_users" RENAME TO "users"`);
+        await queryRunner.query(`CREATE TABLE "hashtag" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "tag" varchar NOT NULL)`);
+        await queryRunner.query(`CREATE UNIQUE INDEX "IDX_d08e011257d7cba6df34c55313" ON "hashtag" ("tag") `);
+        await queryRunner.query(`CREATE TABLE "like" ("userId" integer NOT NULL, "postId" integer NOT NULL, "createdAt" datetime NOT NULL DEFAULT (datetime('now')), PRIMARY KEY ("userId", "postId"))`);
+        await queryRunner.query(`CREATE TABLE "post" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "content" text NOT NULL, "createdAt" datetime NOT NULL DEFAULT (datetime('now')), "updatedAt" datetime NOT NULL DEFAULT (datetime('now')), "authorId" integer)`);
+        await queryRunner.query(`CREATE INDEX "IDX_fba5ccb4d382c7136e013a5875" ON "post" ("authorId", "createdAt") `);
+        await queryRunner.query(`CREATE TABLE "activity" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "userId" integer NOT NULL, "type" varchar NOT NULL, "referenceId" integer NOT NULL, "createdAt" datetime NOT NULL DEFAULT (datetime('now')))`);
+        await queryRunner.query(`CREATE TABLE "post_hashtag" ("postId" integer NOT NULL, "hashtagId" integer NOT NULL, PRIMARY KEY ("postId", "hashtagId"))`);
+        await queryRunner.query(`CREATE INDEX "IDX_6b41c908e59dd1c45518efa429" ON "post_hashtag" ("postId") `);
+        await queryRunner.query(`CREATE INDEX "IDX_5e6bd8131c5321b4dbf68f1ce5" ON "post_hashtag" ("hashtagId") `);
+        await queryRunner.query(`CREATE TABLE "follow" ("usersId_1" integer NOT NULL, "usersId_2" integer NOT NULL, PRIMARY KEY ("usersId_1", "usersId_2"))`);
+        await queryRunner.query(`CREATE INDEX "IDX_b0f13064367158a264f16a7f27" ON "follow" ("usersId_1") `);
+        await queryRunner.query(`CREATE INDEX "IDX_bbfe76bf71a6a484bc3b74d45f" ON "follow" ("usersId_2") `);
+        await queryRunner.query(`CREATE TABLE "temporary_users" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "firstName" varchar NOT NULL, "lastName" varchar NOT NULL, "email" varchar NOT NULL, "createdAt" datetime NOT NULL DEFAULT (datetime('now')), "updatedAt" datetime NOT NULL DEFAULT (datetime('now')), CONSTRAINT "UQ_97672ac88f789774dd47f7c8be3" UNIQUE ("email"))`);
+        await queryRunner.query(`INSERT INTO "temporary_users"("id", "firstName", "lastName", "email", "createdAt", "updatedAt") SELECT "id", "firstName", "lastName", "email", "createdAt", "updatedAt" FROM "users"`);
+        await queryRunner.query(`DROP TABLE "users"`);
+        await queryRunner.query(`ALTER TABLE "temporary_users" RENAME TO "users"`);
+        await queryRunner.query(`CREATE UNIQUE INDEX "IDX_97672ac88f789774dd47f7c8be" ON "users" ("email") `);
+        await queryRunner.query(`CREATE TABLE "temporary_like" ("userId" integer NOT NULL, "postId" integer NOT NULL, "createdAt" datetime NOT NULL DEFAULT (datetime('now')), CONSTRAINT "FK_e8fb739f08d47955a39850fac23" FOREIGN KEY ("userId") REFERENCES "users" ("id") ON DELETE NO ACTION ON UPDATE NO ACTION, CONSTRAINT "FK_3acf7c55c319c4000e8056c1279" FOREIGN KEY ("postId") REFERENCES "post" ("id") ON DELETE NO ACTION ON UPDATE NO ACTION, PRIMARY KEY ("userId", "postId"))`);
+        await queryRunner.query(`INSERT INTO "temporary_like"("userId", "postId", "createdAt") SELECT "userId", "postId", "createdAt" FROM "like"`);
+        await queryRunner.query(`DROP TABLE "like"`);
+        await queryRunner.query(`ALTER TABLE "temporary_like" RENAME TO "like"`);
+        await queryRunner.query(`DROP INDEX "IDX_fba5ccb4d382c7136e013a5875"`);
+        await queryRunner.query(`CREATE TABLE "temporary_post" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "content" text NOT NULL, "createdAt" datetime NOT NULL DEFAULT (datetime('now')), "updatedAt" datetime NOT NULL DEFAULT (datetime('now')), "authorId" integer, CONSTRAINT "FK_c6fb082a3114f35d0cc27c518e0" FOREIGN KEY ("authorId") REFERENCES "users" ("id") ON DELETE NO ACTION ON UPDATE NO ACTION)`);
+        await queryRunner.query(`INSERT INTO "temporary_post"("id", "content", "createdAt", "updatedAt", "authorId") SELECT "id", "content", "createdAt", "updatedAt", "authorId" FROM "post"`);
+        await queryRunner.query(`DROP TABLE "post"`);
+        await queryRunner.query(`ALTER TABLE "temporary_post" RENAME TO "post"`);
+        await queryRunner.query(`CREATE INDEX "IDX_fba5ccb4d382c7136e013a5875" ON "post" ("authorId", "createdAt") `);
+        await queryRunner.query(`CREATE TABLE "temporary_activity" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "userId" integer NOT NULL, "type" varchar NOT NULL, "referenceId" integer NOT NULL, "createdAt" datetime NOT NULL DEFAULT (datetime('now')), CONSTRAINT "FK_3571467bcbe021f66e2bdce96ea" FOREIGN KEY ("userId") REFERENCES "users" ("id") ON DELETE NO ACTION ON UPDATE NO ACTION)`);
+        await queryRunner.query(`INSERT INTO "temporary_activity"("id", "userId", "type", "referenceId", "createdAt") SELECT "id", "userId", "type", "referenceId", "createdAt" FROM "activity"`);
+        await queryRunner.query(`DROP TABLE "activity"`);
+        await queryRunner.query(`ALTER TABLE "temporary_activity" RENAME TO "activity"`);
+        await queryRunner.query(`DROP INDEX "IDX_6b41c908e59dd1c45518efa429"`);
+        await queryRunner.query(`DROP INDEX "IDX_5e6bd8131c5321b4dbf68f1ce5"`);
+        await queryRunner.query(`CREATE TABLE "temporary_post_hashtag" ("postId" integer NOT NULL, "hashtagId" integer NOT NULL, CONSTRAINT "FK_6b41c908e59dd1c45518efa4291" FOREIGN KEY ("postId") REFERENCES "post" ("id") ON DELETE CASCADE ON UPDATE CASCADE, CONSTRAINT "FK_5e6bd8131c5321b4dbf68f1ce5f" FOREIGN KEY ("hashtagId") REFERENCES "hashtag" ("id") ON DELETE NO ACTION ON UPDATE NO ACTION, PRIMARY KEY ("postId", "hashtagId"))`);
+        await queryRunner.query(`INSERT INTO "temporary_post_hashtag"("postId", "hashtagId") SELECT "postId", "hashtagId" FROM "post_hashtag"`);
+        await queryRunner.query(`DROP TABLE "post_hashtag"`);
+        await queryRunner.query(`ALTER TABLE "temporary_post_hashtag" RENAME TO "post_hashtag"`);
+        await queryRunner.query(`CREATE INDEX "IDX_6b41c908e59dd1c45518efa429" ON "post_hashtag" ("postId") `);
+        await queryRunner.query(`CREATE INDEX "IDX_5e6bd8131c5321b4dbf68f1ce5" ON "post_hashtag" ("hashtagId") `);
+        await queryRunner.query(`DROP INDEX "IDX_b0f13064367158a264f16a7f27"`);
+        await queryRunner.query(`DROP INDEX "IDX_bbfe76bf71a6a484bc3b74d45f"`);
+        await queryRunner.query(`CREATE TABLE "temporary_follow" ("usersId_1" integer NOT NULL, "usersId_2" integer NOT NULL, CONSTRAINT "FK_b0f13064367158a264f16a7f27f" FOREIGN KEY ("usersId_1") REFERENCES "users" ("id") ON DELETE CASCADE ON UPDATE CASCADE, CONSTRAINT "FK_bbfe76bf71a6a484bc3b74d45fb" FOREIGN KEY ("usersId_2") REFERENCES "users" ("id") ON DELETE NO ACTION ON UPDATE NO ACTION, PRIMARY KEY ("usersId_1", "usersId_2"))`);
+        await queryRunner.query(`INSERT INTO "temporary_follow"("usersId_1", "usersId_2") SELECT "usersId_1", "usersId_2" FROM "follow"`);
+        await queryRunner.query(`DROP TABLE "follow"`);
+        await queryRunner.query(`ALTER TABLE "temporary_follow" RENAME TO "follow"`);
+        await queryRunner.query(`CREATE INDEX "IDX_b0f13064367158a264f16a7f27" ON "follow" ("usersId_1") `);
+        await queryRunner.query(`CREATE INDEX "IDX_bbfe76bf71a6a484bc3b74d45f" ON "follow" ("usersId_2") `);
+    }
+
+    public async down(queryRunner: QueryRunner): Promise<void> {
+        await queryRunner.query(`DROP INDEX "IDX_bbfe76bf71a6a484bc3b74d45f"`);
+        await queryRunner.query(`DROP INDEX "IDX_b0f13064367158a264f16a7f27"`);
+        await queryRunner.query(`ALTER TABLE "follow" RENAME TO "temporary_follow"`);
+        await queryRunner.query(`CREATE TABLE "follow" ("usersId_1" integer NOT NULL, "usersId_2" integer NOT NULL, PRIMARY KEY ("usersId_1", "usersId_2"))`);
+        await queryRunner.query(`INSERT INTO "follow"("usersId_1", "usersId_2") SELECT "usersId_1", "usersId_2" FROM "temporary_follow"`);
+        await queryRunner.query(`DROP TABLE "temporary_follow"`);
+        await queryRunner.query(`CREATE INDEX "IDX_bbfe76bf71a6a484bc3b74d45f" ON "follow" ("usersId_2") `);
+        await queryRunner.query(`CREATE INDEX "IDX_b0f13064367158a264f16a7f27" ON "follow" ("usersId_1") `);
+        await queryRunner.query(`DROP INDEX "IDX_5e6bd8131c5321b4dbf68f1ce5"`);
+        await queryRunner.query(`DROP INDEX "IDX_6b41c908e59dd1c45518efa429"`);
+        await queryRunner.query(`ALTER TABLE "post_hashtag" RENAME TO "temporary_post_hashtag"`);
+        await queryRunner.query(`CREATE TABLE "post_hashtag" ("postId" integer NOT NULL, "hashtagId" integer NOT NULL, PRIMARY KEY ("postId", "hashtagId"))`);
+        await queryRunner.query(`INSERT INTO "post_hashtag"("postId", "hashtagId") SELECT "postId", "hashtagId" FROM "temporary_post_hashtag"`);
+        await queryRunner.query(`DROP TABLE "temporary_post_hashtag"`);
+        await queryRunner.query(`CREATE INDEX "IDX_5e6bd8131c5321b4dbf68f1ce5" ON "post_hashtag" ("hashtagId") `);
+        await queryRunner.query(`CREATE INDEX "IDX_6b41c908e59dd1c45518efa429" ON "post_hashtag" ("postId") `);
+        await queryRunner.query(`ALTER TABLE "activity" RENAME TO "temporary_activity"`);
+        await queryRunner.query(`CREATE TABLE "activity" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "userId" integer NOT NULL, "type" varchar NOT NULL, "referenceId" integer NOT NULL, "createdAt" datetime NOT NULL DEFAULT (datetime('now')))`);
+        await queryRunner.query(`INSERT INTO "activity"("id", "userId", "type", "referenceId", "createdAt") SELECT "id", "userId", "type", "referenceId", "createdAt" FROM "temporary_activity"`);
+        await queryRunner.query(`DROP TABLE "temporary_activity"`);
+        await queryRunner.query(`DROP INDEX "IDX_fba5ccb4d382c7136e013a5875"`);
+        await queryRunner.query(`ALTER TABLE "post" RENAME TO "temporary_post"`);
+        await queryRunner.query(`CREATE TABLE "post" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "content" text NOT NULL, "createdAt" datetime NOT NULL DEFAULT (datetime('now')), "updatedAt" datetime NOT NULL DEFAULT (datetime('now')), "authorId" integer)`);
+        await queryRunner.query(`INSERT INTO "post"("id", "content", "createdAt", "updatedAt", "authorId") SELECT "id", "content", "createdAt", "updatedAt", "authorId" FROM "temporary_post"`);
+        await queryRunner.query(`DROP TABLE "temporary_post"`);
+        await queryRunner.query(`CREATE INDEX "IDX_fba5ccb4d382c7136e013a5875" ON "post" ("authorId", "createdAt") `);
+        await queryRunner.query(`ALTER TABLE "like" RENAME TO "temporary_like"`);
+        await queryRunner.query(`CREATE TABLE "like" ("userId" integer NOT NULL, "postId" integer NOT NULL, "createdAt" datetime NOT NULL DEFAULT (datetime('now')), PRIMARY KEY ("userId", "postId"))`);
+        await queryRunner.query(`INSERT INTO "like"("userId", "postId", "createdAt") SELECT "userId", "postId", "createdAt" FROM "temporary_like"`);
+        await queryRunner.query(`DROP TABLE "temporary_like"`);
+        await queryRunner.query(`DROP INDEX "IDX_97672ac88f789774dd47f7c8be"`);
+        await queryRunner.query(`ALTER TABLE "users" RENAME TO "temporary_users"`);
+        await queryRunner.query(`CREATE TABLE "users" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "firstName" varchar(255) NOT NULL, "lastName" varchar(255) NOT NULL, "email" varchar(255) NOT NULL, "createdAt" datetime NOT NULL DEFAULT (CURRENT_TIMESTAMP), "updatedAt" datetime NOT NULL DEFAULT (CURRENT_TIMESTAMP), CONSTRAINT "UQ_97672ac88f789774dd47f7c8be3" UNIQUE ("email"))`);
+        await queryRunner.query(`INSERT INTO "users"("id", "firstName", "lastName", "email", "createdAt", "updatedAt") SELECT "id", "firstName", "lastName", "email", "createdAt", "updatedAt" FROM "temporary_users"`);
+        await queryRunner.query(`DROP TABLE "temporary_users"`);
+        await queryRunner.query(`DROP INDEX "IDX_bbfe76bf71a6a484bc3b74d45f"`);
+        await queryRunner.query(`DROP INDEX "IDX_b0f13064367158a264f16a7f27"`);
+        await queryRunner.query(`DROP TABLE "follow"`);
+        await queryRunner.query(`DROP INDEX "IDX_5e6bd8131c5321b4dbf68f1ce5"`);
+        await queryRunner.query(`DROP INDEX "IDX_6b41c908e59dd1c45518efa429"`);
+        await queryRunner.query(`DROP TABLE "post_hashtag"`);
+        await queryRunner.query(`DROP TABLE "activity"`);
+        await queryRunner.query(`DROP INDEX "IDX_fba5ccb4d382c7136e013a5875"`);
+        await queryRunner.query(`DROP TABLE "post"`);
+        await queryRunner.query(`DROP TABLE "like"`);
+        await queryRunner.query(`DROP INDEX "IDX_d08e011257d7cba6df34c55313"`);
+        await queryRunner.query(`DROP TABLE "hashtag"`);
+        await queryRunner.query(`ALTER TABLE "users" RENAME TO "temporary_users"`);
+        await queryRunner.query(`CREATE TABLE "users" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "firstName" varchar(255) NOT NULL, "lastName" varchar(255) NOT NULL, "email" varchar(255) NOT NULL, "createdAt" datetime NOT NULL DEFAULT (CURRENT_TIMESTAMP), "updatedAt" datetime NOT NULL DEFAULT (CURRENT_TIMESTAMP), CONSTRAINT "UQ_97672ac88f789774dd47f7c8be3" UNIQUE ("email"))`);
+        await queryRunner.query(`INSERT INTO "users"("id", "firstName", "lastName", "email", "createdAt", "updatedAt") SELECT "id", "firstName", "lastName", "email", "createdAt", "updatedAt" FROM "temporary_users"`);
+        await queryRunner.query(`DROP TABLE "temporary_users"`);
+    }
+
+}

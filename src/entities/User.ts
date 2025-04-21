@@ -10,24 +10,24 @@ import {
   Index
 } from "typeorm";
 import { Post } from "./Post";
-import { Follow } from "./Follow";
+// import { Follow } from "./Follow";
 import { Like } from "./Like";
 import { Activity } from "./Activity";
 
 @Entity()
-@Index(["email"], { unique: true })  // only email is unique/indexed now :contentReference[oaicite:0]{index=0}
+@Index(["email"], { unique: true })
 export class Users {
   @PrimaryGeneratedColumn()
-  id: number;                         // auto‑increment PK :contentReference[oaicite:1]{index=1}
+  id: number;
 
   @Column()
-  firstName: string;                  // new firstName column :contentReference[oaicite:2]{index=2}
+  firstName: string;
 
   @Column()
-  lastName: string;                   // new lastName column :contentReference[oaicite:3]{index=3}
+  lastName: string;
 
   @Column()
-  email: string;                      // still unique/indexed :contentReference[oaicite:4]{index=4}
+  email: string;
 
   @CreateDateColumn()
   createdAt: Date;
@@ -39,7 +39,7 @@ export class Users {
   posts: Post[];
 
   @ManyToMany(() => Users, user => user.followers)
-  @JoinTable({ name: "follow" })
+  @JoinTable({ name: "follow" }) // Owning side
   followings: Users[];
 
   @ManyToMany(() => Users, user => user.followings)
