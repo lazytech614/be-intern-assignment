@@ -32,12 +32,14 @@ postRouter.post(
 postRouter.put(
   '/:id',  
   validate(updatePostSchema),  
+  authenticateUser,
   postController.updatePost.bind(postController)  
 );
 
 // Delete a post  
 postRouter.delete(
   '/:id',  
+  authenticateUser,
   postController.deletePost.bind(postController)  
 );
 

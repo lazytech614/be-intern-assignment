@@ -91,6 +91,12 @@ export class PostController {
   // Update an existing post
   async updatePost(req: Request, res: Response) {
     try {
+      const authorId = req.userId;
+
+      if(!authorId) {
+        return res.status(400).json({ message: 'Author ID is missing from request' });
+      }
+
       const post = await this.postRepository.findOneBy({
         id: parseInt(req.params.id, 10),
       });
@@ -108,6 +114,12 @@ export class PostController {
   // Delete a post
   async deletePost(req: Request, res: Response) {
     try {
+      const authorId = req.userId;
+
+      if(!authorId) {
+        return res.status(400).json({ message: 'Author ID is missing from request' });
+      }
+
       const result = await this.postRepository.delete(parseInt(req.params.id, 10));
       if (result.affected === 0) {
         return res.status(404).json({ message: 'Post not found' });
