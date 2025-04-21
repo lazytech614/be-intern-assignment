@@ -27,3 +27,9 @@ userRouter.post('/:id/follow', authenticateUser, userController.followUser.bind(
 
 // Unfollow a user
 userRouter.post('/:id/unfollow', authenticateUser, userController.unfollowUser.bind(userController));
+
+// Like a post
+userRouter.post('/:id/like', authenticateUser, userController.likePost.bind(userController));
+
+// Unlike a post
+userRouter.post('/:id/unlike', authenticateUser, userController.unlikePost.bind(userController));

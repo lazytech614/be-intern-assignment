@@ -1,9 +1,13 @@
 import { Request, Response } from 'express';
 import { Users } from '../entities/User';
+import { Post } from '../entities/Post';
+import { Like } from '../entities/Like';
 import { AppDataSource } from '../data-source';
 
 export class UserController {
   private userRepository = AppDataSource.getRepository(Users);
+  private postRepository = AppDataSource.getRepository(Post);
+  private likeRepository = AppDataSource.getRepository(Like);
 
   async getAllUsers(req: Request, res: Response) {
     try {
@@ -122,4 +126,55 @@ export class UserController {
 
     return res.status(200).json({ message: "Successfully unfollowed the user." });
   }
+
+  // Like a post
+  async likePost(req: Request, res: Response) {
+    const postId = parseInt(req.params.id);
+    const userId = req.userId;
+  
+    if (!postId || !userId) {
+      return res.status(400).json({ message: 'Invalid post ID or user ID' });
+    }
+  
+    const post = await this.postRepository.findOne({ where: { id: postId } });
+    if (!post) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
+  
+    const existingLike = await this.likeRepository.findOne({
+      where: { postId, userId },
+    });
+  
+    if (existingLike) {
+      return res.status(400).json({ message: 'You have already liked this post' });
+    }
+  
+    const like = this.likeRepository.create({ postId, userId });
+    await this.likeRepository.save(like);
+  
+    return res.status(200).json({ message: 'Post liked successfully' });
+  }
+  
+  // Unlike a post
+  async unlikePost(req: Request, res: Response) {
+    const postId = parseInt(req.params.id);
+    const userId = req.userId;
+  
+    if (!postId || !userId) {
+      return res.status(400).json({ message: 'Invalid post ID or user ID' });
+    }
+  
+    const existingLike = await this.likeRepository.findOne({
+      where: { postId, userId },
+    });
+  
+    if (!existingLike) {
+      return res.status(400).json({ message: 'You have not liked this post' });
+    }
+  
+    await this.likeRepository.remove(existingLike);
+  
+    return res.status(200).json({ message: 'Post unliked successfully' });
+  }
+  
 }
