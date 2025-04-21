@@ -244,6 +244,50 @@ export class UserController {
       },
     });
   }
-  
-  
+
+  // get all my followers
+  async getFollowers(req: Request, res: Response) {
+    try {
+      const userId = req.userId;
+      const limit = parseInt(req.query.limit as string) || 10;
+      const offset = parseInt(req.query.offset as string) || 0;
+
+      // Verify if the user exists
+      const user = await this.userRepository.findOne({ where: { id: userId } });
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      // Total followers
+      const totalFollowers = await this.userRepository
+      .createQueryBuilder('user')
+      .innerJoin('user.followings', 'followings') // FIXED HERE
+      .where('followings.id = :userId', { userId })
+      .getCount();
+
+      // For pagination
+      const followers = await this.userRepository
+        .createQueryBuilder('user')
+        .innerJoin('user.followings', 'followings') // FIXED HERE
+        .where('followings.id = :userId', { userId })
+        .select(['user.id', 'user.firstName', 'user.lastName', 'user.email'])
+        .orderBy('user.id', 'DESC')
+        .skip(offset)
+        .take(limit)
+        .getMany();
+
+
+      return res.status(200).json({
+        totalFollowers,
+        followers,
+        pagination: {
+          limit,
+          offset,
+        },
+      });
+    } catch (error) {
+      console.error('Error fetching followers:', error);
+      return res.status(500).json({ message: 'Internal server error' });
+    }
+  }
 }
