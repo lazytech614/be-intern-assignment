@@ -1,5 +1,3 @@
-# DESIGN.md
-
 ## Database Schema Design
 
 This document describes the database schema and relationships for the backend application using TypeORM.
